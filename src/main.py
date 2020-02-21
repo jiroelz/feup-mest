@@ -1,9 +1,25 @@
 import pandas as pd
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import balanced_accuracy_score
 from sklearn.model_selection import train_test_split
 from encoder import Encoder
+from classifiers import get_classifier
+
+def is_posted_on_weekend(row):
+  if (row.day_posted == 'SATURDAY' or row.day_posted == 'SUNDAY'):
+    return 'yes'
+  return 'no'
+
+def is_current_day_weekend(row):
+  if (row.current_day == 'SATURDAY' or row.current_day == 'SUNDAY'):
+    return 'yes'
+  return 'no'
+
+def create_additional_columns(data):
+  data['is_posted_on_weekend'] = data.apply(is_posted_on_weekend, axis=1)
+  data['is_current_day_weekend'] = data.apply(is_current_day_weekend, axis=1)
+
+  return data
 
 le = Encoder()
 
@@ -21,15 +37,15 @@ test_data = le.encode_dataframe(test_data)
 x = train_data.drop('has_new_comments', axis=1)
 y = train_data['has_new_comments']
 
-# Train model using the specified classifier
-clf = RandomForestClassifier()
-clf.fit(x, y)
-
 # Split training data and test the accuracy of the model
-y = train_data['has_new_comments']
-x_train, x_test, y_train, y_test = train_test_split(train_data.loc[:, train_data.columns != 'has_new_comments'], y, test_size=0.25)
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.30)
+
+# Train model using the specified classifier
+clf = get_classifier('RF')
+clf.fit(x_train, y_train)
+
 predictions = clf.predict(x_test)
-accuracy = balanced_accuracy_score(predictions, y_test)
+accuracy = balanced_accuracy_score(y_test, predictions)
 print('Accuracy: ', accuracy)
 
 # Predict the has_new_comments column
