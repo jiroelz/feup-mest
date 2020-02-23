@@ -1,35 +1,60 @@
 import pandas as pd
 import numpy as np
-from sklearn.metrics import balanced_accuracy_score
+from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split
 from encoder import Encoder
+import utils
 from classifiers import get_classifier
 
-def is_posted_on_weekend(row):
-  if (row.day_posted == 'SATURDAY' or row.day_posted == 'SUNDAY'):
-    return 'yes'
-  return 'no'
+# columns that should be checked for outliers
+OUTLIER_COLS = [
+]
 
-def is_current_day_weekend(row):
-  if (row.current_day == 'SATURDAY' or row.current_day == 'SUNDAY'):
-    return 'yes'
-  return 'no'
+# columns that should be standardized (z-score normalization)
+STANDARDIZE_COLS = [
+  
+]
 
-def create_additional_columns(data):
-  data['is_posted_on_weekend'] = data.apply(is_posted_on_weekend, axis=1)
-  data['is_current_day_weekend'] = data.apply(is_current_day_weekend, axis=1)
+# columns that should be dropped
+DROP_COLS = [
+]
 
-  return data
+# columns on which a Log Transform should be applied
+LOG_TRANSFORM_COLS = [
+  'page_likes',
+  'page_interaction',
+  'tot_no_comments_bef',
+  'no_comments_24h',
+  'no_comments_48_24h',
+  'no_comments_24h_after_pub',
+  'delta_48_24h',
+  'character_count_post',
+  'no_shares_post'
+]
 
 le = Encoder()
 
 # Read training data
 train_data = pd.read_csv('../data/dev.csv', index_col='ID', na_values=':')
+
+train_data = utils.drop_cols(train_data, DROP_COLS)
+train_data = utils.drop_missing_value_rows(train_data, 0.7)
+train_data = utils.remove_outliers(train_data, OUTLIER_COLS)
+train_data = utils.standardize(train_data, STANDARDIZE_COLS)
+train_data = utils.log_transform(train_data, LOG_TRANSFORM_COLS)
+
 train_data = le.encode_dataframe(train_data)
 
 # Read test data
 test_data = pd.read_csv('../data/new.csv', index_col='ID', na_values=':')
 test_data = test_data.drop('has_new_comments', axis=1)
+
+train_data = utils.drop_cols(train_data, DROP_COLS)
+train_data = utils.drop_missing_value_rows(train_data, 0.7)
+train_data = utils.remove_outliers(train_data, OUTLIER_COLS)
+train_data = utils.standardize(train_data, STANDARDIZE_COLS)
+train_data = utils.log_transform(train_data, LOG_TRANSFORM_COLS)
+
 test_data = le.encode_dataframe(test_data)
 
 # Y = has_new_comments column
@@ -41,11 +66,11 @@ y = train_data['has_new_comments']
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.30)
 
 # Train model using the specified classifier
-clf = get_classifier('RF')
+clf = get_classifier('GB')
 clf.fit(x_train, y_train)
 
 predictions = clf.predict(x_test)
-accuracy = balanced_accuracy_score(y_test, predictions)
+accuracy = accuracy_score(y_test, predictions)
 print('Accuracy: ', accuracy)
 
 # Predict the has_new_comments column
