@@ -7,30 +7,16 @@ import utils
 from classifiers import get_classifier
 
 # columns that should be checked for outliers
-OUTLIER_COLS = [
-]
+OUTLIER_COLS = []
 
 # columns that should be standardized (z-score normalization)
-STANDARDIZE_COLS = [
-  
-]
+STANDARDIZE_COLS = []
 
 # columns that should be dropped
-DROP_COLS = [
-]
+DROP_COLS = []
 
 # columns on which a Log Transform should be applied
-LOG_TRANSFORM_COLS = [
-  'page_likes',
-  'page_interaction',
-  'tot_no_comments_bef',
-  'no_comments_24h',
-  'no_comments_48_24h',
-  'no_comments_24h_after_pub',
-  'delta_48_24h',
-  'character_count_post',
-  'no_shares_post'
-]
+LOG_TRANSFORM_COLS = []
 
 le = Encoder()
 
@@ -49,11 +35,11 @@ train_data = le.encode_dataframe(train_data)
 test_data = pd.read_csv('../data/new.csv', index_col='ID', na_values=':')
 test_data = test_data.drop('has_new_comments', axis=1)
 
-train_data = utils.drop_cols(train_data, DROP_COLS)
-train_data = utils.drop_missing_value_rows(train_data, 0.7)
-train_data = utils.remove_outliers(train_data, OUTLIER_COLS)
-train_data = utils.standardize(train_data, STANDARDIZE_COLS)
-train_data = utils.log_transform(train_data, LOG_TRANSFORM_COLS)
+test_data = utils.drop_cols(test_data, DROP_COLS)
+test_data = utils.drop_missing_value_rows(test_data, 0.7)
+test_data = utils.remove_outliers(test_data, OUTLIER_COLS)
+test_data = utils.standardize(test_data, STANDARDIZE_COLS)
+test_data = utils.log_transform(test_data, LOG_TRANSFORM_COLS)
 
 test_data = le.encode_dataframe(test_data)
 
@@ -66,7 +52,7 @@ y = train_data['has_new_comments']
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.30)
 
 # Train model using the specified classifier
-clf = get_classifier('GB')
+clf = get_classifier('XGB')
 clf.fit(x_train, y_train)
 
 predictions = clf.predict(x_test)
