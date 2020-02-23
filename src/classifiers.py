@@ -3,9 +3,10 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.svm import SVC
 from sklearn.gaussian_process import GaussianProcessClassifier
 from sklearn.tree import DecisionTreeClassifier
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis
+from xgboost import XGBClassifier
 
 classifiers = {
   'MLP': MLPClassifier(),
@@ -16,7 +17,9 @@ classifiers = {
   'RF': RandomForestClassifier(),
   'AB': AdaBoostClassifier(),
   'GNB': GaussianNB(),
-  'QDA': QuadraticDiscriminantAnalysis()
+  'QDA': QuadraticDiscriminantAnalysis(),
+  'GB': GradientBoostingClassifier(),
+  'XGB': XGBClassifier()
 }
 
 def get_classifier(classifier):
